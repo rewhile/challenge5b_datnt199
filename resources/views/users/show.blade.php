@@ -77,7 +77,7 @@
                                         <div class="d-flex justify-content-between">
                                             <small class="text-muted">From: {{ $message->sender->username }} on {{ $message->created_at->format('M d, Y H:i') }}</small>
                                             
-                                            @if(Auth::id() == $message->sender_id)
+                                            @if(Auth::id() == $message->from_user_id)
                                                 <div>
                                                     <a href="{{ route('messages.edit', $message->id) }}" class="btn btn-sm btn-primary">Edit</a>
                                                     <form action="{{ route('messages.destroy', $message->id) }}" method="POST" class="d-inline">
