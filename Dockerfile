@@ -33,12 +33,22 @@ WORKDIR /var/www/html
 # Copy existing application directory contents
 COPY . /var/www/html
 
+# Create necessary directories if they don't exist
+RUN mkdir -p /var/www/html/storage/app/public \
+    /var/www/html/storage/framework/cache \
+    /var/www/html/storage/framework/sessions \
+    /var/www/html/storage/framework/views \
+    /var/www/html/storage/logs \
+    /var/www/html/bootstrap/cache
+
 # Generate the autoloader files
 RUN composer install
 
-# Set proper permissions
+# Set proper permissions - fixing the log file permission issue
 RUN chown -R www-data:www-data /var/www/html
-RUN chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache
+RUN touch /var/www/html/storage/logs/laravel.log
+RUN chmod 777 /var/www/html/storage/logs/laravel.log
 
 # Create a more robust startup script
 RUN echo '#!/bin/sh' > /usr/local/bin/startup.sh && \

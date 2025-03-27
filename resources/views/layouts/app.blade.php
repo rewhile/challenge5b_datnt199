@@ -1,123 +1,239 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ config('app.name', 'Classroom Management') }}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <title>{{ config('app.name', 'Student Management System') }}</title>
+
+    <!-- Fonts -->
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" rel="stylesheet">
+    
+    <!-- Custom Styles -->
     <style>
+        :root {
+            --bs-primary: #000000;
+            --bs-secondary: #666666;
+            --bs-success: #212529;
+            --bs-info: #444444;
+            --bs-warning: #888888;
+            --bs-danger: #333333;
+            --bs-light: #f8f9fa;
+            --bs-dark: #212529;
+        }
+
         body {
-            padding-top: 4.5rem;
-            background-color: #f8f9fa;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #333;
+            background-color: #f9f9f9;
         }
-        .container {
-            max-width: 1200px;
-        }
+        
         .navbar-brand {
-            font-weight: bold;
+            font-weight: 700;
+            letter-spacing: -0.5px;
         }
+        
+        .main-content {
+            flex: 1;
+        }
+        
+        .footer {
+            margin-top: auto;
+            padding: 1rem 0;
+            background-color: #ffffff;
+            border-top: 1px solid #eaeaea;
+        }
+        
         .card {
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-            margin-bottom: 1.5rem;
+            border: none;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            border-radius: 8px;
         }
-        .message {
-            border-left: 4px solid #6c757d;
-            padding-left: 1rem;
-            margin-bottom: 1rem;
+        
+        .card-header {
+            background-color: #000;
+            color: #fff;
+            border-radius: 8px 8px 0 0 !important;
+            font-weight: 600;
+        }
+        
+        .btn {
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        
+        .btn-primary {
+            background-color: #000;
+            border-color: #000;
+        }
+        
+        .btn-primary:hover {
+            background-color: #333;
+            border-color: #333;
+        }
+        
+        .btn-secondary {
+            background-color: #666;
+            border-color: #666;
+        }
+        
+        .btn-info {
+            background-color: #444;
+            border-color: #444;
+            color: white;
+        }
+        
+        .btn-danger {
+            background-color: #333;
+            border-color: #333;
+        }
+        
+        .btn-outline-primary {
+            border-color: #000;
+            color: #000;
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: #000;
+            color: #fff;
+        }
+        
+        .badge {
+            font-weight: 500;
+            padding: 0.35em 0.65em;
+        }
+        
+        .bg-primary {
+            background-color: #000 !important;
+        }
+        
+        .bg-danger {
+            background-color: #333 !important;
+        }
+        
+        .bg-info {
+            background-color: #444 !important;
+        }
+        
+        .bg-success {
+            background-color: #212529 !important;
+        }
+        
+        .table {
+            color: #333;
+        }
+        
+        .dropdown-menu {
+            border-radius: 4px;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+            border: 1px solid #eaeaea;
+        }
+        
+        .form-control:focus {
+            border-color: #000;
+            box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Dark navbar */
+        .navbar-dark {
+            background-color: #000 !important;
+        }
+        
+        /* Override Bootstrap's default focus styles */
+        .btn:focus, .btn:active:focus {
+            box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-md navbar-dark bg-primary fixed-top">
-        <div class="container">
-            <a class="navbar-brand" href="{{ url('/') }}">{{ config('app.name', 'Classroom Management') }}</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    @auth
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
-                                <i class="fas fa-tachometer-alt"></i> Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}" href="{{ route('users.index') }}">
-                                <i class="fas fa-users"></i> Users
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('assignments.*') ? 'active' : '' }}" href="{{ route('assignments.index') }}">
-                                <i class="fas fa-book"></i> Assignments
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('challenges.*') ? 'active' : '' }}" href="{{ route('challenges.index') }}">
-                                <i class="fas fa-puzzle-piece"></i> Challenges
-                            </a>
-                        </li>
-                    @endauth
-                </ul>
-                
-                <ul class="navbar-nav">
-                    @guest
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('login') }}">Login</a>
-                        </li>
-                    @else
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                                {{ Auth::user()->fullname }} ({{ Auth::user()->role }})
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('users.show', Auth::id()) }}">
-                                        <i class="fas fa-user"></i> Profile
+    <div id="app">
+        <nav class="navbar navbar-expand-md navbar-dark bg-dark shadow-sm">
+            <div class="container">
+                <a class="navbar-brand" href="{{ url('/') }}">
+                    {{ config('app.name', 'Student Management System') }}
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <!-- Left Side Of Navbar -->
+                    <ul class="navbar-nav me-auto">
+                        @auth
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('dashboard') }}">Dashboard</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('users.index') }}">Users</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('assignments.index') }}">Assignments</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('challenges.index') }}">Challenges</a>
+                            </li>
+                        @endauth
+                    </ul>
+
+                    <!-- Right Side Of Navbar -->
+                    <ul class="navbar-nav ms-auto">
+                        <!-- Authentication Links -->
+                        @guest
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('login') }}">Login</a>
+                            </li>
+                        @else
+                            <li class="nav-item dropdown">
+                                <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                                    {{ Auth::user()->username }} ({{ ucfirst(Auth::user()->role) }})
+                                </a>
+
+                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                    <a class="dropdown-item" href="{{ route('users.show', Auth::user()->id) }}">
+                                        My Profile
                                     </a>
-                                </li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <form method="POST" action="{{ route('logout') }}">
+                                    <a class="dropdown-item" href="{{ route('logout') }}"
+                                       onclick="event.preventDefault();
+                                                     document.getElementById('logout-form').submit();">
+                                        Logout
+                                    </a>
+
+                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                                         @csrf
-                                        <button type="submit" class="dropdown-item">
-                                            <i class="fas fa-sign-out-alt"></i> Logout
-                                        </button>
                                     </form>
-                                </li>
-                            </ul>
-                        </li>
-                    @endguest
-                </ul>
+                                </div>
+                            </li>
+                        @endguest
+                    </ul>
+                </div>
             </div>
-        </div>
-    </nav>
+        </nav>
 
-    <main class="container py-4">
-        @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <main class="py-4 main-content">
+            @yield('content')
+        </main>
+        
+        <footer class="footer">
+            <div class="container">
+                <div class="text-center text-muted">
+                    <p class="mb-0">© {{ date('Y') }} Student Management System</p>
+                </div>
             </div>
-        @endif
-
-        @if(session('error'))
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                {{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        @endif
-
-        @yield('content')
-    </main>
-
-    <footer class="bg-light py-3 mt-auto">
-        <div class="container text-center">
-            <p class="text-muted mb-0">&copy; {{ date('Y') }} Classroom Management System</p>
-        </div>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+        </footer>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

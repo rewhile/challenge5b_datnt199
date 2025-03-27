@@ -43,8 +43,8 @@
                                         <td>{{ $assignment->title }}</td>
                                         <td>{{ Str::limit($assignment->description, 50) }}</td>
                                         <td>
-                                            @if($assignment->due_date)
-                                                {{ $assignment->due_date->format('M d, Y') }}
+                                            @if($assignment->due_date && !is_null($assignment->due_date))
+                                                {{ \Carbon\Carbon::parse($assignment->due_date)->format('M d, Y') }}
                                             @else
                                                 No due date
                                             @endif

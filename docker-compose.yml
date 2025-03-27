@@ -6,9 +6,9 @@ services:
     container_name: laravel_app
     restart: unless-stopped
     working_dir: /var/www/html
+    # Create a named volume for app code
     volumes:
-      - app_data:/var/www/html
-      - ./storage:/var/www/html/storage
+      - laravel_app:/var/www/html
     depends_on:
       - db
     networks:
@@ -37,7 +37,7 @@ services:
     ports:
       - "8000:80"
     volumes:
-      - app_data:/var/www/html:ro
+      - laravel_app:/var/www/html:ro  # Share the same volume as the app container
       - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
     depends_on:
       - app
@@ -55,5 +55,5 @@ networks:
 volumes:
   dbdata:
     driver: local
-  app_data:
+  laravel_app:  # Define a named volume for the application code
     driver: local

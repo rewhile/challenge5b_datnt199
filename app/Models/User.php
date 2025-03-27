@@ -49,7 +49,7 @@ class User extends Authenticatable
     /**
      * Check if the user is a teacher
      */
-    public function isTeacher()
+    public function isTeacher(): bool
     {
         return $this->role === 'teacher';
     }
@@ -57,7 +57,7 @@ class User extends Authenticatable
     /**
      * Check if the user is a student
      */
-    public function isStudent()
+    public function isStudent(): bool
     {
         return $this->role === 'student';
     }

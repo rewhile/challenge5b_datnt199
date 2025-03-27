@@ -17,8 +17,8 @@ class Assignment extends Model
         'teacher_id',
     ];
 
-    protected $dates = [
-        'due_date',
+    protected $casts = [
+        'due_date' => 'datetime',
     ];
 
     /**

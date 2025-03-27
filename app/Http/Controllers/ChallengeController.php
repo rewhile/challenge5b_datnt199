@@ -6,11 +6,12 @@ use App\Models\Challenge;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ChallengeController extends Controller
 {
     /**
-     * Display a listing of challenges
+     * Display a listing of the challenges
      */
     public function index()
     {
@@ -24,7 +25,7 @@ class ChallengeController extends Controller
     public function create()
     {
         // Only teachers can create challenges
-        if (!Auth::user()->isTeacher()) {
+        if (Auth::user()->role !== 'teacher') {
             return redirect()->route('challenges.index')->with('error', 'Only teachers can create challenges');
         }
         
@@ -37,26 +38,29 @@ class ChallengeController extends Controller
     public function store(Request $request)
     {
         // Only teachers can create challenges
-        if (!Auth::user()->isTeacher()) {
+        if (Auth::user()->role !== 'teacher') {
             return redirect()->route('challenges.index')->with('error', 'Only teachers can create challenges');
         }
 
         $validated = $request->validate([
-            'title' => 'required|max:255',
-            'hint' => 'required',
-            'challenge_file' => 'required|file|mimes:txt|max:2048', // 2MB max text file
+            'title' => 'required|string|max:255',
+            'hint' => 'required|string',
+            'challenge_file' => 'required|file|mimes:txt|max:2048',
         ]);
-        
-        // Store file with its original name (without spaces and diacritics)
-        $path = $request->file('challenge_file')->store('challenges');
 
+        // Get the original filename (answer)
+        $fileName = pathinfo($request->file('challenge_file')->getClientOriginalName(), PATHINFO_FILENAME);
+        
+        // Store file with the original name
+        $path = $request->file('challenge_file')->storeAs('challenges', $fileName . '.txt');
+        
         Challenge::create([
             'title' => $validated['title'],
             'hint' => $validated['hint'],
             'file_path' => $path,
             'teacher_id' => Auth::id(),
         ]);
-
+        
         return redirect()->route('challenges.index')->with('success', 'Challenge created successfully');
     }
 
@@ -69,23 +73,29 @@ class ChallengeController extends Controller
     }
 
     /**
-     * Handle a challenge solution attempt
+     * Attempt to solve the challenge
      */
     public function solve(Request $request, Challenge $challenge)
     {
         $validated = $request->validate([
-            'answer' => 'required',
+            'answer' => 'required|string',
         ]);
 
-        $answer = $validated['answer'];
-        $expectedAnswer = pathinfo(basename($challenge->file_path), PATHINFO_FILENAME);
-
-        if ($answer === $expectedAnswer) {
+        // Get the correct answer from the filename
+        $correctAnswer = pathinfo($challenge->file_path, PATHINFO_FILENAME);
+        
+        // Compare with the provided answer (case-insensitive)
+        if (strcasecmp(trim($validated['answer']), $correctAnswer) === 0) {
+            // If correct, read the content of the file
             $content = Storage::get($challenge->file_path);
-            return redirect()->back()->with(['success' => 'Correct answer!', 'content' => $content]);
-        } else {
-            return redirect()->back()->with('error', 'Incorrect answer. Try again.');
+            
+            return redirect()->back()->with([
+                'success' => 'Correct answer! Here is the content:',
+                'content' => $content,
+            ]);
         }
+        
+        return redirect()->back()->with('error', 'Incorrect answer. Try again.');
     }
 
     /**
@@ -93,12 +103,12 @@ class ChallengeController extends Controller
      */
     public function destroy(Challenge $challenge)
     {
-        // Only teachers can delete challenges
-        if (!Auth::user()->isTeacher()) {
-            return redirect()->route('challenges.index')->with('error', 'Only teachers can delete challenges');
+        // Only the teacher who created the challenge can delete it
+        if (Auth::id() !== $challenge->teacher_id) {
+            return redirect()->route('challenges.index')->with('error', 'You can only delete your own challenges');
         }
         
-        // Delete file
+        // Delete the file
         Storage::delete($challenge->file_path);
         
         $challenge->delete();
