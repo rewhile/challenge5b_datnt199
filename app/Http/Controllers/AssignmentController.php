@@ -79,7 +79,18 @@ class AssignmentController extends Controller
      */
     public function download(Assignment $assignment)
     {
-        return Storage::download($assignment->file_path);
+        if (!Storage::exists($assignment->file_path)) {
+            return redirect()->back()->with('error', 'File not found');
+        }
+        
+        $path = Storage::path($assignment->file_path);
+        $fileName = basename($assignment->file_path);
+        $headers = [
+            'Content-Type' => Storage::mimeType($assignment->file_path),
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+        ];
+        
+        return response()->file($path, $headers);
     }
 
     /**

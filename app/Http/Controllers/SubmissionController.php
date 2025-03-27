@@ -60,6 +60,17 @@ class SubmissionController extends Controller
             return abort(403);
         }
 
-        return Storage::download($submission->file_path);
+        if (!Storage::exists($submission->file_path)) {
+            return redirect()->back()->with('error', 'File not found');
+        }
+        
+        $path = Storage::path($submission->file_path);
+        $fileName = basename($submission->file_path);
+        $headers = [
+            'Content-Type' => Storage::mimeType($submission->file_path),
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+        ];
+        
+        return response()->file($path, $headers);
     }
 }
